@@ -29,17 +29,30 @@ def generate_random_trace(length: int = 500, blocks: int = 20, seed: int = 42) -
     return [rng.choice(pattern) for _ in range(length)]
 
 
-def generate_dynamic_trace(seed: int = 42, phase_length: int = 300) -> List[str]:
+def generate_dynamic_trace(
+    seed: int = 42,
+    phase_length: Optional[int] = None,
+    total_length: Optional[int] = None
+) -> List[str]:
     rng = random.Random(seed)
+
+    if total_length is not None:
+        p1_len = max(1, total_length // 3)
+        p2_len = max(1, total_length // 3)
+        p3_len = max(1, total_length - p1_len - p2_len)
+    else:
+        plen = phase_length or 300
+        p1_len, p2_len, p3_len = plen, plen, plen
+
     # Phase 1: looping
     loop_pattern = ["A", "B", "C", "D", "E", "F"]
-    loop_part = [loop_pattern[i % len(loop_pattern)] for i in range(phase_length)]
+    loop_part = [loop_pattern[i % len(loop_pattern)] for i in range(p1_len)]
     # Phase 2: random
     random_blocks = [chr(ord("A") + i) for i in range(20)]
-    random_part = [rng.choice(random_blocks) for _ in range(phase_length)]
+    random_part = [rng.choice(random_blocks) for _ in range(p2_len)]
     # Phase 3: sequential
     seq_pattern = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-    seq_part = [seq_pattern[i % len(seq_pattern)] for i in range(phase_length)]
+    seq_part = [seq_pattern[i % len(seq_pattern)] for i in range(p3_len)]
 
     return loop_part + random_part + seq_part
 
@@ -53,7 +66,9 @@ def get_workload_trace(workload_name: str, length: Optional[int] = None) -> List
     elif name == "Random":
         trace = generate_random_trace(length or 500)
     else:  # Dynamic
-        trace = generate_dynamic_trace(phase_length=max(100, (length or 900) // 3))
+        if length is not None:
+            return generate_dynamic_trace(seed=42, total_length=length)
+        return generate_dynamic_trace(seed=42, phase_length=300)
 
     if length is not None:
         return trace[:length]

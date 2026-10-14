@@ -263,7 +263,8 @@ def simulate(req: SimulationRequest):
                     if policy == "LRU" or policy == "FIFO":
                         evicted = cache_state.pop(0)
                     elif policy == "Random":
-                        evicted = cache_state.pop(0)  # deterministically pop first for stable replay
+                        rnd_idx = (42 + i * 7) % len(cache_state)
+                        evicted = cache_state.pop(rnd_idx)
                 cache_state.append(block)
 
             events_out.append(
@@ -304,8 +305,12 @@ def simulate(req: SimulationRequest):
         prefetchCoverage=f"{coverage_pct:.2f}%"
     )
 
-    # 4. Generate Comparative Benchmark on Workload
-    benchmark_trace = get_workload_trace(req.workload or "Dynamic", length=60)
+    # 4. Generate Comparative Benchmark on Workload (or Custom Trace)
+    if req.custom_trace and len(req.custom_trace) > 0:
+        benchmark_trace = req.custom_trace
+    else:
+        benchmark_trace = get_workload_trace(req.workload or "Dynamic", length=60)
+
     benchmarks = evaluate_benchmarks(
         trace=benchmark_trace,
         replacement_model=regression_model,

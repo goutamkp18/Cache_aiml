@@ -75,9 +75,12 @@ export default function ResultsView({
         {/* Bar Chart Grid */}
         <div className="space-y-4">
           {benchmark.map((item) => {
-            const isHighest = highestPolicy && item.name === highestPolicy.name
+            const isHighest = highestPolicy && item.name === highestPolicy.name && item.value > 0
             const isSelectedPolicy = item.name === policy
-            const barWidthPercent = Math.min(100, Math.max(4, (item.value / (maxValue || 100)) * 100))
+            const barWidthPercent =
+              item.value <= 0
+                ? 0
+                : Math.min(100, Math.max(4, (item.value / (maxValue || 100)) * 100))
 
             return (
               <div key={item.name} className="space-y-1.5">
@@ -98,16 +101,25 @@ export default function ResultsView({
                     )}
                   </div>
 
-                  <span className="font-mono font-bold text-sm text-[var(--text-primary)]">
-                    {item.value.toFixed(2)}%
-                  </span>
+                  <div className="flex items-center gap-2">
+                    {item.value === 0 && (
+                      <span className="text-[10px] text-[var(--text-muted)] italic">
+                        (Thrashing: Capacity &lt; Working Set)
+                      </span>
+                    )}
+                    <span className="font-mono font-bold text-sm text-[var(--text-primary)]">
+                      {item.value.toFixed(2)}%
+                    </span>
+                  </div>
                 </div>
 
                 {/* Progress Track */}
                 <div className="h-6 rounded-lg bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] overflow-hidden p-0.5">
                   <motion.div
                     className={`h-full rounded-md transition-all ${
-                      isHighest
+                      item.value <= 0
+                        ? 'w-0'
+                        : isHighest
                         ? 'bg-gradient-to-r from-emerald-500 to-emerald-400 text-white'
                         : isSelectedPolicy
                         ? 'bg-gradient-to-r from-red-600 to-rose-500 text-white'
@@ -123,11 +135,13 @@ export default function ResultsView({
           })}
         </div>
 
-        <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] flex items-center gap-2 text-xs text-[var(--text-muted)]">
-          <Info className="w-4 h-4 flex-shrink-0" />
-          <span>
-            Hit rates reflect actual multi-policy evaluations computed by the Python simulation engine on the active workload.
-          </span>
+        <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] space-y-2 text-xs text-[var(--text-muted)]">
+          <div className="flex items-start gap-2">
+            <Info className="w-4 h-4 flex-shrink-0 mt-0.5 text-[var(--accent-cyan)]" />
+            <p className="leading-relaxed">
+              <strong>Architectural Note:</strong> A 0.00% hit rate is legitimate computer architecture behavior when the working set exceeds cache capacity. In <em>Sequential</em> workloads (26 blocks) or <em>Looping</em> workloads (6 blocks) with capacity 4, every access misses in classical LRU/FIFO due to <strong>scan/loop thrashing</strong>. Only <strong>ML + Prefetch</strong> overcomes thrashing by staging future blocks speculatively.
+            </p>
+          </div>
         </div>
       </div>
 
