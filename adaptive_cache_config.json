@@ -1,0 +1,17 @@
+{
+    "context_size": 2,
+    "confidence_threshold": 0.7,
+    "decay": 0.9,
+    "replacement_features": [
+        "recency",
+        "frequency",
+        "recent_frequency",
+        "recent_frequency_ratio",
+        "avg_reuse_distance",
+        "reuse_distance_std",
+        "lifetime",
+        "recent_working_set_size"
+    ],
+    "replacement_model": "RandomForestRegressor",
+    "prefetch_model": "Markov"
+}

@@ -1,0 +1,10 @@
+[
+    "recency",
+    "frequency",
+    "recent_frequency",
+    "recent_frequency_ratio",
+    "avg_reuse_distance",
+    "reuse_distance_std",
+    "lifetime",
+    "recent_working_set_size"
+]
