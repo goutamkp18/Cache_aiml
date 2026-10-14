@@ -1,21 +1,22 @@
 export type SimulationResult = 'HIT' | 'MISS'
 
 export type PrefetchState = {
-  block?: string
-  confidence?: number
-  status: 'PREFETCHED' | 'NO PREFETCH'
+  block?: string | null
+  confidence?: number | null
+  status: 'PREFETCHED' | 'NO PREFETCH' | string
   context: string[]
 }
 
 export type SimulationEvent = {
+  index: number
   request: string
   result: SimulationResult
   cacheBefore: string[]
-  predictions: Record<string, number>
-  selectedVictim?: string
-  evicted?: string
-  inserted?: string
   cacheAfter: string[]
+  predictions: Record<string, number>
+  selectedVictim?: string | null
+  evicted?: string | null
+  inserted?: string | null
   prefetch: PrefetchState
 }
 
@@ -28,12 +29,6 @@ export type SimulationMetrics = {
   missRate: string
   prefetchAccuracy: string
   prefetchCoverage: string
-}
-
-export type SimulationSnapshot = {
-  event: SimulationEvent
-  metrics: SimulationMetrics
-  index: number
 }
 
 export type BenchmarkItem = {
