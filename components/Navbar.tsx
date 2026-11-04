@@ -5,12 +5,11 @@ import {
   BrainCircuit,
   Moon,
   Sun,
-  Server,
-  RefreshCw,
-  Info,
-  CheckCircle2,
-  AlertCircle,
-  SlidersHorizontal
+  SlidersHorizontal,
+  Cpu,
+  Layers,
+  BarChart3,
+  Play
 } from 'lucide-react'
 
 interface NavbarProps {
@@ -28,18 +27,18 @@ export default function Navbar({
   onRetryConnection,
   onOpenSettings,
 }: NavbarProps) {
-  const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
     setMounted(true)
     const currentTheme =
-      document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light'
+      document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark'
     setTheme(currentTheme)
   }, [])
 
   const toggleTheme = () => {
-    const nextTheme = theme === 'light' ? 'dark' : 'light'
+    const nextTheme = theme === 'dark' ? 'light' : 'dark'
     setTheme(nextTheme)
     document.documentElement.setAttribute('data-theme', nextTheme)
     try {
@@ -47,114 +46,120 @@ export default function Navbar({
     } catch (e) {}
   }
 
+  const isConnected = backendStatus === 'CONNECTED'
+
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-[var(--border-subtle)] bg-[var(--bg-surface)]/85 backdrop-blur-md transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-        {/* Brand / Logo */}
-        <div className="flex items-center gap-3 select-none">
-          <div className="w-8 h-8 rounded-lg bg-[var(--accent-crimson-subtle)] border border-[var(--accent-crimson-border)] flex items-center justify-center text-[var(--accent-crimson)]">
+    <header className="sticky top-0 z-40 w-full border-b border-[#1e293b] bg-[#0c111b]/95 backdrop-blur-md transition-colors shadow-md">
+      <div className="max-w-[1560px] mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        {/* Left: Brand / Logo */}
+        <div className="flex items-center gap-3 select-none flex-shrink-0">
+          {/* Red glowing square microchip badge */}
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#FF454F] to-[#b91c1c] flex items-center justify-center text-white shadow-[0_0_15px_rgba(255,69,79,0.4)]">
             <BrainCircuit className="w-5 h-5" />
           </div>
+
           <div>
             <div className="flex items-center gap-2">
-              <span className="font-semibold tracking-tight text-base text-[var(--text-primary)]">
-                Adaptive Cache <span className="text-[var(--accent-crimson)]">AI</span>
+              <span className="font-bold tracking-tight text-base text-white">
+                Adaptive Cache <span className="text-[#FF454F]">AI</span>
               </span>
-              <span className="text-[10px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-[var(--accent-cyan-subtle)] text-[var(--accent-cyan)] border border-[var(--accent-cyan-border)]">
-                Simulator
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-[#12CBEA]/10 text-[#12CBEA] border border-[#12CBEA]/40">
+                SIMULATOR
               </span>
             </div>
-            <p className="text-[11px] text-[var(--text-muted)] hidden sm:block">
+            <p className="text-[11px] font-medium text-[#94a3b8] hidden sm:block">
               Random Forest Regressor &bull; Markov Prefetcher
             </p>
           </div>
         </div>
 
-        {/* Center Navigation Tabs */}
-        <nav className="flex items-center p-1 bg-[var(--bg-surface-elevated)] border border-[var(--border-subtle)] rounded-lg">
+        {/* Center: Navigation Pill Tabs */}
+        <nav className="flex items-center p-1 bg-[#111827] border border-[#1e293b] rounded-full">
+          {/* Simulator */}
           <button
             onClick={() => onTabChange('simulator')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-full transition-all cursor-pointer ${
               activeTab === 'simulator'
-                ? 'bg-[var(--bg-surface)] text-[var(--accent-crimson)] shadow-sm font-semibold'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-gradient-to-r from-[#FF454F] to-[#e11d48] text-white shadow-[0_0_12px_rgba(255,69,79,0.4)]'
+                : 'text-[#94a3b8] hover:text-white hover:bg-[#172235]'
             }`}
           >
-            Simulator
+            <Play className="w-3.5 h-3.5 fill-current" />
+            <span>Simulator</span>
           </button>
+
+          {/* Results */}
           <button
             onClick={() => onTabChange('results')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-full transition-all cursor-pointer ${
               activeTab === 'results'
-                ? 'bg-[var(--bg-surface)] text-[var(--accent-crimson)] shadow-sm font-semibold'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-gradient-to-r from-[#FF454F] to-[#e11d48] text-white shadow-[0_0_12px_rgba(255,69,79,0.4)]'
+                : 'text-[#94a3b8] hover:text-white hover:bg-[#172235]'
             }`}
           >
-            Results
+            <BarChart3 className="w-3.5 h-3.5" />
+            <span>Results</span>
           </button>
+
+          {/* How It Works */}
           <button
             onClick={() => onTabChange('how-it-works')}
-            className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold rounded-full transition-all cursor-pointer ${
               activeTab === 'how-it-works'
-                ? 'bg-[var(--bg-surface)] text-[var(--accent-crimson)] shadow-sm font-semibold'
-                : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
+                ? 'bg-gradient-to-r from-[#FF454F] to-[#e11d48] text-white shadow-[0_0_12px_rgba(255,69,79,0.4)]'
+                : 'text-[#94a3b8] hover:text-white hover:bg-[#172235]'
             }`}
           >
-            How It Works
+            <Layers className="w-3.5 h-3.5" />
+            <span>How It Works</span>
           </button>
         </nav>
 
-        {/* Right Side Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Backend Status Pill */}
-          {backendStatus === 'CONNECTED' ? (
-            <div className="hidden sm:flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--accent-green-subtle)] border border-[var(--accent-green-border)] text-[var(--accent-green)]">
-              <span className="w-2 h-2 rounded-full bg-[var(--accent-green)] relative flex items-center justify-center">
-                <span className="absolute w-2.5 h-2.5 rounded-full bg-[var(--accent-green)] animate-ping-subtle" />
-              </span>
-              <span>FastAPI &bull; Models Loaded</span>
-            </div>
-          ) : backendStatus === 'PROCESSING' ? (
-            <div className="flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
-              <RefreshCw className="w-3 h-3 animate-spin" />
-              <span className="hidden sm:inline">Connecting...</span>
+        {/* Right Status & Controls */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* FastAPI : 8000 Status Pill */}
+          {isConnected ? (
+            <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[#064e3b]/80 border border-[#10b981]/50 text-[#34d399] shadow-[0_0_8px_rgba(16,185,129,0.2)]">
+              <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse" />
+              <span>FastAPI : 8000</span>
             </div>
           ) : (
             <button
               onClick={onRetryConnection}
-              className="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--accent-crimson-subtle)] border border-[var(--accent-crimson-border)] text-[var(--accent-crimson)] hover:bg-red-500/20 transition-colors"
-              title="Click to retry backend connection"
+              className="flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[#7f1d1d]/80 border border-[#ef4444]/50 text-[#fca5a5] cursor-pointer"
             >
-              <AlertCircle className="w-3 h-3" />
-              <span>Offline &bull; Retry</span>
+              <span className="w-2 h-2 rounded-full bg-[#ef4444]" />
+              <span>Offline (Retry)</span>
             </button>
           )}
 
-          {/* Settings / Info Modal Trigger */}
+          {/* RF + Markov Loaded Pill */}
+          <div className="hidden lg:flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-[#0c2d48]/80 border border-[#0284c7]/50 text-[#38bdf8] shadow-[0_0_8px_rgba(18,203,234,0.2)]">
+            <span className="w-2 h-2 rounded-full bg-[#12CBEA]" />
+            <span>RF + Markov Loaded</span>
+          </div>
+
+          {/* Theme Toggle Button */}
+          <button
+            onClick={toggleTheme}
+            className="w-9 h-9 rounded-full bg-[#111827] border border-[#1e293b] flex items-center justify-center text-[#94a3b8] hover:text-white hover:bg-[#172235] transition-all cursor-pointer"
+            title="Toggle theme"
+          >
+            {mounted && theme === 'light' ? (
+              <Moon className="w-4 h-4 text-[#FF454F]" />
+            ) : (
+              <Sun className="w-4 h-4 text-[#f59e0b]" />
+            )}
+          </button>
+
+          {/* Settings Button */}
           <button
             onClick={onOpenSettings}
-            className="p-2 rounded-lg border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-elevated)] transition-colors"
-            title="Simulation & API Settings"
-            aria-label="Simulation Settings"
+            className="w-9 h-9 rounded-full bg-[#111827] border border-[#1e293b] flex items-center justify-center text-[#94a3b8] hover:text-white hover:bg-[#172235] transition-all cursor-pointer"
+            title="Settings"
           >
             <SlidersHorizontal className="w-4 h-4" />
           </button>
-
-          {/* Theme Toggle Button */}
-          {mounted && (
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg border border-[var(--border-subtle)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-surface-elevated)] transition-colors"
-              title={`Switch to ${theme === 'light' ? 'Dark' : 'Light'} theme`}
-              aria-label="Toggle theme"
-            >
-              {theme === 'light' ? (
-                <Moon className="w-4 h-4 text-slate-700" />
-              ) : (
-                <Sun className="w-4 h-4 text-amber-400" />
-              )}
-            </button>
-          )}
         </div>
       </div>
     </header>

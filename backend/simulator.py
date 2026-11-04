@@ -57,18 +57,24 @@ def generate_dynamic_trace(
     return loop_part + random_part + seq_part
 
 
-def get_workload_trace(workload_name: str, length: Optional[int] = None) -> List[str]:
+def get_workload_trace(
+    workload_name: str,
+    length: Optional[int] = None,
+    seed: Optional[int] = None
+) -> List[str]:
     name = (workload_name or "Dynamic").strip().capitalize()
+    s = seed if seed is not None else 42
+
     if name == "Looping":
         trace = generate_loop_trace(length or 500)
     elif name == "Sequential":
         trace = generate_sequential_trace(length or 500)
     elif name == "Random":
-        trace = generate_random_trace(length or 500)
+        trace = generate_random_trace(length or 500, seed=s)
     else:  # Dynamic
         if length is not None:
-            return generate_dynamic_trace(seed=42, total_length=length)
-        return generate_dynamic_trace(seed=42, phase_length=300)
+            return generate_dynamic_trace(seed=s, total_length=length)
+        return generate_dynamic_trace(seed=s, phase_length=300)
 
     if length is not None:
         return trace[:length]
@@ -565,3 +571,81 @@ def evaluate_benchmarks(
         BenchmarkItemSchema(name="ML Replacement", value=round(ml_replace["hit_rate"] * 100, 2)),
         BenchmarkItemSchema(name="ML + Prefetch", value=round(combined["hit_rate"] * 100, 2)),
     ]
+
+
+def evaluate_policy_run(
+    policy_name: str,
+    trace: List[str],
+    capacity: int,
+    replacement_model,
+    prefetch_model_data: Dict
+) -> float:
+    """Helper to evaluate a single policy hit rate cleanly."""
+    if policy_name == "LRU":
+        return round(LRUCache(capacity=capacity).run(trace)["hit_rate"] * 100, 2)
+    elif policy_name == "FIFO":
+        return round(FIFOCache(capacity=capacity).run(trace)["hit_rate"] * 100, 2)
+    elif policy_name == "Random":
+        return round(RandomCache(capacity=capacity, seed=42).run(trace)["hit_rate"] * 100, 2)
+    elif policy_name == "ML Replacement":
+        return round(AdaptiveMLCacheV3(model=replacement_model, capacity=capacity, recent_window=16).run(trace)["hit_rate"] * 100, 2)
+    elif policy_name == "ML + Prefetch":
+        pref = MarkovPrefetcher(transition_model=prefetch_model_data, context_size=2, threshold=0.70)
+        return round(MLReplacementPrefetchCache(replacement_model=replacement_model, prefetcher=pref, capacity=capacity).run(trace)["hit_rate"] * 100, 2)
+    return 0.0
+
+
+def evaluate_full_benchmark_matrix(
+    replacement_model,
+    prefetch_model_data: Dict,
+    trace_length: int = 60,
+    seed: int = 42
+) -> Dict[str, Any]:
+    """
+    Computes real experimental results for all 4 workloads across all 5 policies,
+    and across all 4 cache capacities [2, 4, 8, 16].
+    """
+    workloads = ["Sequential", "Looping", "Random", "Dynamic"]
+    policies = ["LRU", "FIFO", "Random", "ML Replacement", "ML + Prefetch"]
+    capacities = [2, 4, 8, 16]
+
+    matrix: Dict[str, Dict[str, float]] = {}
+    capacity_experiments: Dict[str, List[Dict[str, Any]]] = {}
+
+    for wl in workloads:
+        trace = get_workload_trace(wl, length=trace_length, seed=seed)
+        
+        # 1. Base 4-capacity comparison for workload matrix
+        base_items = evaluate_benchmarks(
+            trace=trace,
+            replacement_model=replacement_model,
+            prefetch_model_data=prefetch_model_data,
+            capacity=4
+        )
+        matrix[wl] = {item.name: item.value for item in base_items}
+
+        # 2. Capacity variation experiments
+        cap_list = []
+        for cap in capacities:
+            cap_policy_scores: Dict[str, float] = {}
+            for pol in policies:
+                hit_rate = evaluate_policy_run(
+                    policy_name=pol,
+                    trace=trace,
+                    capacity=cap,
+                    replacement_model=replacement_model,
+                    prefetch_model_data=prefetch_model_data
+                )
+                cap_policy_scores[pol] = hit_rate
+            cap_list.append({
+                "capacity": cap,
+                "policies": cap_policy_scores
+            })
+        capacity_experiments[wl] = cap_list
+
+    return {
+        "workloads": workloads,
+        "policies": policies,
+        "matrix": matrix,
+        "capacity_experiments": capacity_experiments
+    }

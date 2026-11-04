@@ -1,16 +1,69 @@
 @import "tailwindcss";
 
 :root {
-  /* Light Theme (Default) */
+  /* Premium AI Command Center — Dark Theme (DEFAULT) */
+  --bg-page: #080B12;
+  --bg-header: #0C111B;
+  --bg-surface: #111827;
+  --bg-card-primary: #111827;
+  --bg-card-secondary: #172235;
+  --bg-surface-elevated: #1C293D;
+  --bg-surface-hover: #1e293b;
+
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
+  --border-subtle: #1E293B;
+  --border-focus: #334155;
+  --border-accent: rgba(255, 69, 79, 0.3);
+
+  --accent-crimson: #FF454F;
+  --accent-crimson-hover: #ff5e67;
+  --accent-crimson-subtle: rgba(255, 69, 79, 0.12);
+  --accent-crimson-border: rgba(255, 69, 79, 0.28);
+  --accent-crimson-glow: rgba(255, 69, 79, 0.35);
+
+  --accent-cyan: #12CBEA;
+  --accent-cyan-hover: #38d6ee;
+  --accent-cyan-subtle: rgba(18, 203, 234, 0.12);
+  --accent-cyan-border: rgba(18, 203, 234, 0.28);
+  --accent-cyan-glow: rgba(18, 203, 234, 0.35);
+
+  --accent-green: #22C55E;
+  --accent-green-subtle: rgba(34, 197, 94, 0.12);
+  --accent-green-border: rgba(34, 197, 94, 0.28);
+
+  --accent-warning: #F59E0B;
+  --accent-warning-subtle: rgba(245, 158, 11, 0.12);
+  --accent-warning-border: rgba(245, 158, 11, 0.28);
+
+  --accent-error: #EF4444;
+
+  --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  --shadow-card: 0 4px 12px -2px rgba(0, 0, 0, 0.45);
+  --shadow-elevated: 0 12px 24px -4px rgba(0, 0, 0, 0.6);
+
+  color-scheme: dark;
+}
+
+[data-theme="light"] {
+  /* Light Theme (Alternative Toggle in Settings) */
   --bg-page: #f8fafc;
+  --bg-header: #ffffff;
   --bg-surface: #ffffff;
-  --bg-surface-elevated: #f1f5f9;
-  --bg-surface-hover: #f8fafc;
+  --bg-card-primary: #ffffff;
+  --bg-card-secondary: #f1f5f9;
+  --bg-surface-elevated: #e2e8f0;
+  --bg-surface-hover: #f1f5f9;
+
   --text-primary: #0f172a;
   --text-secondary: #475569;
   --text-muted: #94a3b8;
+
   --border-subtle: #e2e8f0;
   --border-focus: #cbd5e1;
+  --border-accent: rgba(220, 38, 38, 0.3);
 
   --accent-crimson: #dc2626;
   --accent-crimson-hover: #b91c1c;
@@ -28,46 +81,17 @@
   --accent-green-subtle: #f0fdf4;
   --accent-green-border: #bbf7d0;
 
-  --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
-  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.04), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
-  --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
+  --accent-warning: #d97706;
+  --accent-warning-subtle: #fffbeb;
+  --accent-warning-border: #fde68a;
+
+  --accent-error: #dc2626;
+
+  --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.04);
+  --shadow-elevated: 0 10px 15px -3px rgba(0, 0, 0, 0.06);
 
   color-scheme: light;
-}
-
-[data-theme="dark"] {
-  /* Dark Theme */
-  --bg-page: #090d16;
-  --bg-surface: #111827;
-  --bg-surface-elevated: #162032;
-  --bg-surface-hover: #1e293b;
-  --text-primary: #f8fafc;
-  --text-secondary: #cbd5e1;
-  --text-muted: #64748b;
-  --border-subtle: #1e293b;
-  --border-focus: #334155;
-
-  --accent-crimson: #ef4444;
-  --accent-crimson-hover: #f87171;
-  --accent-crimson-subtle: rgba(239, 68, 68, 0.12);
-  --accent-crimson-border: rgba(239, 68, 68, 0.28);
-  --accent-crimson-glow: rgba(239, 68, 68, 0.35);
-
-  --accent-cyan: #22d3ee;
-  --accent-cyan-hover: #67e8f9;
-  --accent-cyan-subtle: rgba(34, 211, 238, 0.12);
-  --accent-cyan-border: rgba(34, 211, 238, 0.28);
-  --accent-cyan-glow: rgba(34, 211, 238, 0.35);
-
-  --accent-green: #22c55e;
-  --accent-green-subtle: rgba(34, 197, 94, 0.12);
-  --accent-green-border: rgba(34, 197, 94, 0.28);
-
-  --shadow-subtle: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
-  --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.35);
-  --shadow-elevated: 0 10px 20px -3px rgba(0, 0, 0, 0.5);
-
-  color-scheme: dark;
 }
 
 * {
@@ -102,6 +126,14 @@ html, body {
   background: var(--text-muted);
 }
 
+/* Command Center Grid Texture Pattern */
+.bg-command-grid {
+  background-size: 24px 24px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+}
+
 /* 3D Isometric Cache Slot Card Effects */
 .cache-slot-3d {
   perspective: 600px;
@@ -110,7 +142,7 @@ html, body {
 
 .cache-slot-face {
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 6px 12px -2px rgba(0, 0, 0, 0.25);
 }
 
 .cache-slot-face.normal {

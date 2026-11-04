@@ -1,0 +1,216 @@
+{
+  "workloads": [
+    "Sequential",
+    "Looping",
+    "Random",
+    "Dynamic"
+  ],
+  "policies": [
+    "LRU",
+    "FIFO",
+    "Random",
+    "ML Replacement",
+    "ML + Prefetch"
+  ],
+  "matrix": {
+    "Sequential": {
+      "LRU": 0.0,
+      "FIFO": 0.0,
+      "Random": 0.0,
+      "ML Replacement": 6.67,
+      "ML + Prefetch": 48.33
+    },
+    "Looping": {
+      "LRU": 0.0,
+      "FIFO": 0.0,
+      "Random": 31.67,
+      "ML Replacement": 55.0,
+      "ML + Prefetch": 58.33
+    },
+    "Random": {
+      "LRU": 11.67,
+      "FIFO": 11.67,
+      "Random": 11.67,
+      "ML Replacement": 20.0,
+      "ML + Prefetch": 20.0
+    },
+    "Dynamic": {
+      "LRU": 5.0,
+      "FIFO": 6.67,
+      "Random": 11.67,
+      "ML Replacement": 23.33,
+      "ML + Prefetch": 41.67
+    }
+  },
+  "capacityExperiments": {
+    "Sequential": [
+      {
+        "capacity": 2,
+        "policies": {
+          "LRU": 0.0,
+          "FIFO": 0.0,
+          "Random": 0.0,
+          "ML Replacement": 1.67,
+          "ML + Prefetch": 48.33
+        }
+      },
+      {
+        "capacity": 4,
+        "policies": {
+          "LRU": 0.0,
+          "FIFO": 0.0,
+          "Random": 0.0,
+          "ML Replacement": 6.67,
+          "ML + Prefetch": 48.33
+        }
+      },
+      {
+        "capacity": 8,
+        "policies": {
+          "LRU": 0.0,
+          "FIFO": 0.0,
+          "Random": 1.67,
+          "ML Replacement": 20.0,
+          "ML + Prefetch": 50.0
+        }
+      },
+      {
+        "capacity": 16,
+        "policies": {
+          "LRU": 0.0,
+          "FIFO": 0.0,
+          "Random": 16.67,
+          "ML Replacement": 40.0,
+          "ML + Prefetch": 68.33
+        }
+      }
+    ],
+    "Looping": [
+      {
+        "capacity": 2,
+        "policies": {
+          "LRU": 0.0,
+          "FIFO": 0.0,
+          "Random": 1.67,
+          "ML Replacement": 18.33,
+          "ML + Prefetch": 48.33
+        }
+      },
+      {
+        "capacity": 4,
+        "policies": {
+          "LRU": 0.0,
+          "FIFO": 0.0,
+          "Random": 31.67,
+          "ML Replacement": 55.0,
+          "ML + Prefetch": 58.33
+        }
+      },
+      {
+        "capacity": 8,
+        "policies": {
+          "LRU": 90.0,
+          "FIFO": 90.0,
+          "Random": 90.0,
+          "ML Replacement": 90.0,
+          "ML + Prefetch": 93.33
+        }
+      },
+      {
+        "capacity": 16,
+        "policies": {
+          "LRU": 90.0,
+          "FIFO": 90.0,
+          "Random": 90.0,
+          "ML Replacement": 90.0,
+          "ML + Prefetch": 93.33
+        }
+      }
+    ],
+    "Random": [
+      {
+        "capacity": 2,
+        "policies": {
+          "LRU": 5.0,
+          "FIFO": 5.0,
+          "Random": 5.0,
+          "ML Replacement": 8.33,
+          "ML + Prefetch": 8.33
+        }
+      },
+      {
+        "capacity": 4,
+        "policies": {
+          "LRU": 11.67,
+          "FIFO": 11.67,
+          "Random": 11.67,
+          "ML Replacement": 20.0,
+          "ML + Prefetch": 20.0
+        }
+      },
+      {
+        "capacity": 8,
+        "policies": {
+          "LRU": 31.67,
+          "FIFO": 30.0,
+          "Random": 23.33,
+          "ML Replacement": 35.0,
+          "ML + Prefetch": 36.67
+        }
+      },
+      {
+        "capacity": 16,
+        "policies": {
+          "LRU": 61.67,
+          "FIFO": 63.33,
+          "Random": 60.0,
+          "ML Replacement": 65.0,
+          "ML + Prefetch": 65.0
+        }
+      }
+    ],
+    "Dynamic": [
+      {
+        "capacity": 2,
+        "policies": {
+          "LRU": 3.33,
+          "FIFO": 3.33,
+          "Random": 5.0,
+          "ML Replacement": 10.0,
+          "ML + Prefetch": 31.67
+        }
+      },
+      {
+        "capacity": 4,
+        "policies": {
+          "LRU": 5.0,
+          "FIFO": 6.67,
+          "Random": 11.67,
+          "ML Replacement": 23.33,
+          "ML + Prefetch": 41.67
+        }
+      },
+      {
+        "capacity": 8,
+        "policies": {
+          "LRU": 40.0,
+          "FIFO": 43.33,
+          "Random": 43.33,
+          "ML Replacement": 41.67,
+          "ML + Prefetch": 56.67
+        }
+      },
+      {
+        "capacity": 16,
+        "policies": {
+          "LRU": 58.33,
+          "FIFO": 66.67,
+          "Random": 65.0,
+          "ML Replacement": 65.0,
+          "ML + Prefetch": 73.33
+        }
+      }
+    ]
+  },
+  "executionTimeMs": 107355.18
+}

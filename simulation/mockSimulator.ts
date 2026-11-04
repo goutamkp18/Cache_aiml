@@ -15,6 +15,7 @@ export function buildDemoEvents(trace = demoTrace, startingCache = initialCache)
     const next = trace[index + 1]
     const prefetchBlock = next && !cacheAfter.includes(next) ? next : undefined
     return {
+      index,
       request,
       result: hit ? 'HIT' : 'MISS',
       cacheBefore,

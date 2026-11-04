@@ -9,10 +9,22 @@ __v0_jsx-dev-runtime.ts
 # Environment variables
 .env*.local
 
-# Common ignores
-node_modules
+# Dependencies & Build
+node_modules/
 .next/
-.DS_Store
 .venv/
+venv/
+env/
 _backup_old_frontend/
-*.pkl
+
+# Python cache & artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.pytest_cache/
+
+# OS / Editor artifacts
+.DS_Store
+Thumbs.db
+tsconfig.tsbuildinfo

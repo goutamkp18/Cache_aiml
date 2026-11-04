@@ -33,7 +33,7 @@ export default function RootLayout({
               (function() {
                 try {
                   var saved = localStorage.getItem('adaptive-cache-theme');
-                  var theme = saved || 'light';
+                  var theme = saved || 'dark';
                   document.documentElement.setAttribute('data-theme', theme);
                 } catch (e) {}
               })();

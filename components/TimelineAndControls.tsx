@@ -1,8 +1,31 @@
 'use client'
 
-import React, { useRef, useEffect } from 'react'
-import { Play, Pause, SkipForward, RotateCcw } from 'lucide-react'
+import React, { useRef, useEffect, useState } from 'react'
+import {
+  Play,
+  Pause,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  RotateCcw,
+  SlidersHorizontal,
+  Compass,
+  Zap,
+  Info
+} from 'lucide-react'
 import type { SimulationEvent } from '@/simulation/simulationTypes'
+
+export type PlaybackSpeed = 0.25 | 0.5 | 1 | 1.5 | 2 | 4
+
+export const SPEED_DELAYS: Record<PlaybackSpeed, number> = {
+  0.25: 4000,
+  0.5: 2500,
+  1: 1500,
+  1.5: 1000,
+  2: 600,
+  4: 300,
+}
 
 interface TimelineAndControlsProps {
   events: SimulationEvent[]
@@ -11,9 +34,14 @@ interface TimelineAndControlsProps {
   isPlaying: boolean
   onTogglePlay: () => void
   onStepForward: () => void
+  onStepBackward: () => void
+  onJumpToStart: () => void
+  onJumpToEnd: () => void
   onReset: () => void
-  speed: number
-  onSpeedChange: (speed: number) => void
+  speed: PlaybackSpeed
+  onSpeedChange: (speed: PlaybackSpeed) => void
+  executionMode: 'step' | 'auto'
+  onExecutionModeChange: (mode: 'step' | 'auto') => void
 }
 
 export default function TimelineAndControls({
@@ -23,13 +51,19 @@ export default function TimelineAndControls({
   isPlaying,
   onTogglePlay,
   onStepForward,
+  onStepBackward,
+  onJumpToStart,
+  onJumpToEnd,
   onReset,
   speed,
   onSpeedChange,
+  executionMode,
+  onExecutionModeChange,
 }: TimelineAndControlsProps) {
   const timelineScrollRef = useRef<HTMLDivElement>(null)
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null)
 
-  // Auto-scroll timeline to keep current event in view
+  // Auto-scroll timeline so current step stays comfortably in view
   useEffect(() => {
     if (!timelineScrollRef.current) return
     const activeEl = timelineScrollRef.current.querySelector(
@@ -44,134 +78,248 @@ export default function TimelineAndControls({
     }
   }, [currentStep])
 
+  const totalSteps = events.length
+  const isAtStart = currentStep === 0
+  const isAtEnd = currentStep >= totalSteps - 1
+
+  const speedOptions: PlaybackSpeed[] = [0.25, 0.5, 1, 1.5, 2, 4]
+
   return (
-    <div className="bg-[var(--bg-surface)] border border-[var(--border-subtle)] rounded-xl p-4 shadow-sm transition-colors mt-4">
-      {/* Timeline Section */}
-      <div className="mb-4">
-        <div className="flex items-center justify-between text-xs font-semibold text-[var(--text-muted)] mb-2 px-1">
-          <span className="flex items-center gap-1.5 uppercase tracking-wider text-[10px] font-bold">
-            <span className="w-1.5 h-1.5 rounded-full bg-[var(--accent-crimson)]" />
-            Simulation Timeline
-          </span>
-          <span className="text-[11px] font-mono">
-            Access {events.length > 0 ? currentStep + 1 : 0} of {events.length}
+    <div className="bg-[#111827] border border-[#1e293b] rounded-2xl p-4 sm:p-5 shadow-xl transition-colors space-y-3.5">
+      {/* Top Header: Title, Access Counter, and Execution Mode Switcher */}
+      <div className="flex flex-wrap items-center justify-between pb-3 border-b border-[#1e293b]/80 gap-2">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-[#FF454F]" />
+          <h3 className="text-xs font-bold text-white tracking-wide">
+            Interactive Access Timeline
+          </h3>
+          <span className="text-[11px] font-mono text-[#94a3b8] hidden sm:inline">
+            Access <strong className="text-white font-bold">{totalSteps > 0 ? currentStep + 1 : 0}</strong> of {totalSteps}
           </span>
         </div>
 
-        {/* Scrollable Event Chips Strip */}
-        <div
-          ref={timelineScrollRef}
-          className="flex items-center gap-1.5 overflow-x-auto pb-2 pt-1 px-1 scrollbar-thin"
-        >
-          {events.map((ev, idx) => {
-            const isCurrent = idx === currentStep
-            const isPast = idx < currentStep
-            const isHit = ev.result === 'HIT'
-
-            return (
-              <button
-                key={`timeline-chip-${idx}`}
-                data-step={idx}
-                onClick={() => onStepChange(idx)}
-                className={`flex-shrink-0 flex flex-col items-center justify-center w-12 sm:w-14 py-1.5 px-1 rounded-lg border text-center transition-all cursor-pointer ${
-                  isCurrent
-                    ? 'bg-[var(--accent-crimson-subtle)] border-[var(--accent-crimson)] ring-2 ring-[var(--accent-crimson)]/30 font-bold scale-105'
-                    : isPast
-                    ? 'bg-[var(--bg-surface-elevated)] border-[var(--border-subtle)] opacity-90 hover:opacity-100 hover:border-[var(--text-muted)]'
-                    : 'bg-transparent border-[var(--border-subtle)] opacity-50 hover:opacity-80'
-                }`}
-                title={`Jump to step ${idx + 1}: Block ${ev.request} (${ev.result})`}
-              >
-                <span
-                  className={`text-sm sm:text-base font-bold font-mono ${
-                    isCurrent
-                      ? 'text-[var(--accent-crimson)]'
-                      : 'text-[var(--text-primary)]'
-                  }`}
-                >
-                  {ev.request}
-                </span>
-
-                <span
-                  className={`text-[9px] font-extrabold uppercase mt-0.5 tracking-tight ${
-                    isPast || isCurrent
-                      ? isHit
-                        ? 'text-[var(--accent-green)]'
-                        : 'text-[var(--accent-crimson)]'
-                      : 'text-[var(--text-muted)]'
-                  }`}
-                >
-                  {isPast || isCurrent ? ev.result : '...'}
-                </span>
-              </button>
-            )
-          })}
+        {/* Execution Mode Selector (Step-by-Step vs Auto Playback) */}
+        <div className="flex items-center p-0.5 rounded-xl bg-[#0c121e] border border-[#1e293b]">
+          <button
+            onClick={() => {
+              if (isPlaying) onTogglePlay()
+              onExecutionModeChange('step')
+            }}
+            className={`px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide transition-all cursor-pointer ${
+              executionMode === 'step'
+                ? 'bg-gradient-to-r from-[#FF454F] to-[#e11d48] text-white shadow-sm'
+                : 'text-[#94a3b8] hover:text-white'
+            }`}
+          >
+            Step-by-Step (Manual)
+          </button>
+          <button
+            onClick={() => onExecutionModeChange('auto')}
+            className={`px-3 py-1 rounded-lg text-[10px] font-bold tracking-wide transition-all cursor-pointer ${
+              executionMode === 'auto'
+                ? 'bg-[#12CBEA]/20 text-[#12CBEA] border border-[#12CBEA]/40'
+                : 'text-[#94a3b8] hover:text-white'
+            }`}
+          >
+            Auto Playback
+          </button>
         </div>
       </div>
 
-      {/* Controls Bar: Playback Actions & Speed Toggle */}
-      <div className="pt-3 border-t border-[var(--border-subtle)] flex flex-wrap items-center justify-between gap-3">
-        {/* Playback Buttons */}
-        <div className="flex items-center gap-2">
-          {/* Play / Pause Toggle Button */}
+      {/* Horizontal Access Tiles Strip with Interactive Tooltip */}
+      <div className="relative">
+        {totalSteps > 0 ? (
+          <div
+            ref={timelineScrollRef}
+            className="flex items-center gap-2 overflow-x-auto py-3 px-1 scrollbar-thin"
+            style={{ scrollbarWidth: 'thin' }}
+          >
+            {events.map((ev, idx) => {
+              const isCurrent = idx === currentStep
+              const isPast = idx < currentStep
+              const isHit = ev.result === 'HIT'
+              const hasPrefetch = ev.prefetch?.status === 'PREFETCHED'
+              const hasEviction = !!ev.evicted || !!ev.selectedVictim
+
+              return (
+                <div
+                  key={`timeline-tile-${idx}`}
+                  className="relative flex-shrink-0"
+                  onMouseEnter={() => setHoveredIdx(idx)}
+                  onMouseLeave={() => setHoveredIdx(null)}
+                >
+                  <button
+                    data-step={idx}
+                    onClick={() => onStepChange(idx)}
+                    className={`flex flex-col items-center justify-between w-12 h-16 py-1.5 px-1 rounded-xl transition-all cursor-pointer relative ${
+                      isCurrent
+                        ? 'bg-[#182338] border-2 border-[#FF454F] shadow-[0_0_14px_rgba(255,69,79,0.5)] scale-105 z-10'
+                        : isPast
+                        ? 'bg-[#0f1726] border border-[#1e293b] opacity-85 hover:opacity-100 hover:border-[#38bdf8]'
+                        : 'bg-[#0a0f18]/60 border border-dashed border-[#1e293b] opacity-40 hover:opacity-75'
+                    }`}
+                  >
+                    {/* Status Pip */}
+                    <div className="absolute top-1 right-1 flex items-center gap-0.5">
+                      {hasPrefetch && (
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#12CBEA] shadow-[0_0_4px_#12CBEA]" />
+                      )}
+                    </div>
+
+                    {/* Block Letter */}
+                    <div className="flex items-center justify-center font-mono font-black text-sm text-white relative">
+                      <span>{ev.request}</span>
+                      {hasPrefetch && (
+                        <span className="text-[10px] text-[#12CBEA] font-bold absolute -top-1 -right-2">
+                          *
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Sub-Badge: HIT or MISS */}
+                    <span
+                      className={`text-[9px] font-black tracking-wider uppercase px-1 py-0.5 rounded ${
+                        isHit
+                          ? 'text-[#22c55e] bg-[#22c55e]/15'
+                          : 'text-[#FF454F] bg-[#FF454F]/15'
+                      }`}
+                    >
+                      {ev.result}
+                    </span>
+                  </button>
+
+                  {/* Rich Floating Tooltip on Hover */}
+                  {hoveredIdx === idx && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-48 p-2.5 rounded-xl bg-[#0c121e] border border-[#334155] shadow-2xl text-[11px] font-mono pointer-events-none">
+                      <div className="flex items-center justify-between pb-1 border-b border-[#1e293b] font-bold text-white">
+                        <span>Access #{idx + 1}</span>
+                        <span className={isHit ? 'text-[#22c55e]' : 'text-[#FF454F]'}>
+                          {ev.result}
+                        </span>
+                      </div>
+                      <div className="pt-1.5 space-y-0.5 text-[#94a3b8]">
+                        <p>Requested: <strong className="text-white">Block {ev.request}</strong></p>
+                        {ev.evicted && (
+                          <p className="text-[#FF454F]">Evicted: Block {ev.evicted}</p>
+                        )}
+                        {hasPrefetch && (
+                          <p className="text-[#12CBEA]">Prefetched: Block {ev.prefetch?.block}</p>
+                        )}
+                        <p className="text-[10px] text-[#64748b]">
+                          Resident: [{ev.cacheAfter?.join(', ')}]
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="py-6 flex items-center justify-center text-center">
+            <span className="text-xs font-mono text-[#64748b]">
+              Timeline standby. Click Play or Run Simulation to load the event sequence.
+            </span>
+          </div>
+        )}
+      </div>
+
+      {/* Control Buttons & Playback Speed Bar */}
+      <div className="flex flex-wrap items-center justify-between pt-3 border-t border-[#1e293b]/80 gap-3">
+        {/* Playback Navigation Buttons */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Jump to Beginning */}
+          <button
+            onClick={onJumpToStart}
+            disabled={totalSteps === 0 || isAtStart || isPlaying}
+            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#172235] hover:bg-[#1e2c44] border border-[#1e293b] text-[#94a3b8] hover:text-white text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            title="Jump to Beginning"
+          >
+            <ChevronsLeft className="w-4 h-4" />
+          </button>
+
+          {/* Previous Step */}
+          <button
+            onClick={onStepBackward}
+            disabled={totalSteps === 0 || isAtStart || isPlaying}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#172235] hover:bg-[#1e2c44] border border-[#1e293b] text-white text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            title="Previous Step"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span className="hidden sm:inline">Prev</span>
+          </button>
+
+          {/* Play / Pause Primary Button */}
           <button
             onClick={onTogglePlay}
-            className="px-4 py-2 rounded-lg bg-[var(--accent-crimson)] hover:bg-[var(--accent-crimson-hover)] text-white text-xs font-semibold flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
-            title={isPlaying ? 'Pause simulation' : 'Play simulation'}
+            disabled={totalSteps === 0}
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-gradient-to-r from-[#FF454F] to-[#e11d48] hover:from-[#ff5e67] hover:to-[#f43f5e] text-white text-xs font-bold shadow-[0_0_14px_rgba(255,69,79,0.4)] transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
           >
             {isPlaying ? (
               <>
-                <Pause className="w-4 h-4 fill-current" />
+                <Pause className="w-3.5 h-3.5 fill-current" />
                 <span>Pause</span>
               </>
             ) : (
               <>
-                <Play className="w-4 h-4 fill-current" />
-                <span>Play</span>
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>{isAtEnd ? 'Replay' : 'Play'}</span>
               </>
             )}
           </button>
 
-          {/* Step Button */}
+          {/* Next Step */}
           <button
             onClick={onStepForward}
-            disabled={isPlaying || currentStep >= events.length - 1}
-            className="px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-surface-elevated)] text-[var(--text-primary)] text-xs font-medium flex items-center gap-1.5 transition-colors disabled:opacity-40 active:scale-95"
-            title="Advance one step"
+            disabled={totalSteps === 0 || isAtEnd || isPlaying}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#172235] hover:bg-[#1e2c44] border border-[#1e293b] text-white text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            title="Next Step"
           >
-            <SkipForward className="w-3.5 h-3.5" />
-            <span>Step</span>
+            <span className="hidden sm:inline">Next</span>
+            <ChevronRight className="w-4 h-4" />
           </button>
 
-          {/* Reset Button */}
+          {/* Jump to End */}
+          <button
+            onClick={onJumpToEnd}
+            disabled={totalSteps === 0 || isAtEnd || isPlaying}
+            className="p-1.5 sm:px-2.5 sm:py-1.5 rounded-lg bg-[#172235] hover:bg-[#1e2c44] border border-[#1e293b] text-[#94a3b8] hover:text-white text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            title="Jump to End"
+          >
+            <ChevronsRight className="w-4 h-4" />
+          </button>
+
+          {/* Reset */}
           <button
             onClick={onReset}
-            className="px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-surface)] hover:bg-[var(--bg-surface-elevated)] text-[var(--text-primary)] text-xs font-medium flex items-center gap-1.5 transition-colors active:scale-95"
-            title="Reset to step 1"
+            disabled={totalSteps === 0}
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-[#172235] hover:bg-[#1e2c44] border border-[#1e293b] text-[#94a3b8] hover:text-white text-xs font-semibold transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer ml-1"
+            title="Reset to Step 0"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset</span>
+            <span className="hidden sm:inline">Reset</span>
           </button>
         </div>
 
-        {/* Playback Speed Toggles */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-[10px] uppercase font-bold text-[var(--text-muted)] mr-1">
-            Speed:
-          </span>
-          {[0.5, 1, 2].map((s) => (
-            <button
-              key={s}
-              onClick={() => onSpeedChange(s)}
-              className={`px-2.5 py-1 text-xs rounded-md font-semibold transition-all ${
-                speed === s
-                  ? 'bg-[var(--accent-crimson-subtle)] text-[var(--accent-crimson)] border border-[var(--accent-crimson-border)] font-bold shadow-xs'
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] border border-transparent'
-              }`}
-            >
-              {s}x
-            </button>
-          ))}
+        {/* Playback Speeds with Exact Timing Labels */}
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-[#94a3b8] font-medium text-[11px]">Speed:</span>
+          <div className="flex items-center p-0.5 rounded-lg bg-[#0c121e] border border-[#1e293b]">
+            {speedOptions.map((s) => (
+              <button
+                key={`speed-${s}`}
+                onClick={() => onSpeedChange(s)}
+                className={`px-2 py-0.5 rounded text-[10px] font-mono font-semibold transition-all cursor-pointer ${
+                  speed === s
+                    ? 'bg-[#FF454F] text-white font-bold shadow-sm'
+                    : 'text-[#94a3b8] hover:text-white'
+                }`}
+                title={`Playback delay: ${SPEED_DELAYS[s]} ms per access`}
+              >
+                {s}x
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>
