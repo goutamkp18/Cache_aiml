@@ -430,6 +430,7 @@ export default function CacheSimulator() {
       telemetryPoints: points,
       startedAt: new Date().toLocaleTimeString(),
       completedAt: null,
+      benchmark: outBenchmark,
     })
 
     setAppState('READY_FOR_PLAYBACK')
@@ -627,7 +628,7 @@ export default function CacheSimulator() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#080B12] text-[#F8FAFC] transition-colors selection:bg-[#FF454F] selection:text-white">
+    <div className="min-h-screen flex flex-col bg-[var(--bg-page)] bg-research-grid text-[var(--text-primary)] transition-colors selection:bg-[var(--accent-vermilion)] selection:text-white overflow-x-hidden">
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
@@ -638,7 +639,7 @@ export default function CacheSimulator() {
       />
 
       {/* Main Content Workspace */}
-      <main className="flex-1 max-w-[1560px] w-full mx-auto px-4 sm:px-6 py-5">
+      <main className="flex-1 max-w-[1680px] 2xl:max-w-[1840px] w-full mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
         {/* Backend Offline Modal */}
         {backendStatus === 'OFFLINE' && (
           <BackendOfflineModal
@@ -650,11 +651,9 @@ export default function CacheSimulator() {
 
         {/* Tab 1: Simulator View */}
         {activeTab === 'simulator' && (
-          <div className="flex flex-col lg:flex-row gap-5 items-start">
+          <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 items-start">
             {/* STEP 1: LEFT SIDEBAR - Experiment Configuration & Controlled Custom Sequence */}
             <SimulatorSidebar
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
               workload={workload}
               onWorkloadChange={handleWorkloadChange}
               cacheSize={cacheSize}
@@ -678,23 +677,23 @@ export default function CacheSimulator() {
             />
 
             {/* MAIN DASHBOARD CONTENT AREA */}
-            <div className="flex-1 min-w-0 flex flex-col gap-4">
+            <div className="flex-1 w-full min-w-0 flex flex-col gap-3.5 sm:gap-4">
               {/* TOP BANNER */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-2 gap-4">
-                <div>
-                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FF454F]/10 border border-[#FF454F]/30 text-[#FF454F] text-[10px] font-bold tracking-wider uppercase">
-                    <span>⚡ AI COMMAND CENTER &bull; WORKLOAD WORKFLOW</span>
+              <div className="glass-card rounded-2xl px-5 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[var(--accent-vermilion-subtle)] border border-[var(--accent-vermilion-border)] text-[var(--accent-vermilion-text)] text-[10px] font-bold tracking-wider uppercase">
+                    <span>AI Research Command Center &bull; Workload Workflow</span>
                   </div>
-                  <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-1.5">
+                  <h1 className="text-xl sm:text-2xl lg:text-[26px] font-extrabold text-[var(--text-primary)] tracking-tight mt-1.5">
                     Live Cache Simulation
                   </h1>
-                  <p className="text-xs text-[#94a3b8] mt-0.5 font-medium">
-                    Review generated memory access sequence, then execute AI cache replacement and adaptive prefetching.
+                  <p className="text-xs sm:text-[13px] text-[var(--text-secondary)] mt-0.5 font-medium">
+                    Inspect the generated memory access sequence, then execute AI cache replacement and adaptive Markov prefetching.
                   </p>
                 </div>
 
                 {/* 3D Floating AI Microchip */}
-                <div className="flex-shrink-0 self-end sm:self-center">
+                <div className="flex-shrink-0 self-center sm:self-auto">
                   <AIChip3D />
                 </div>
               </div>
@@ -827,17 +826,17 @@ export default function CacheSimulator() {
       />
 
       {/* Footer */}
-      <footer className="w-full border-t border-[#1e293b] bg-[#0c111b] py-4 mt-8 transition-colors">
-        <div className="max-w-[1560px] mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-[#64748b] gap-2">
+      <footer className="w-full border-t border-[var(--border-subtle)] bg-[var(--bg-header)] backdrop-blur-md py-3.5 mt-8 transition-colors">
+        <div className="max-w-[1680px] 2xl:max-w-[1840px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between text-xs text-[var(--text-muted)] gap-2">
           <div className="flex items-center gap-2">
-            <span className="font-semibold text-[#94a3b8]">
+            <span className="font-semibold text-[var(--text-primary)]">
               Adaptive Cache AI Simulator
             </span>
             <span>&bull;</span>
-            <span>Random Forest Regressor &bull; Markov Prefetcher</span>
+            <span>Random Forest Regressor &bull; Adaptive Markov Prefetcher</span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 font-mono text-[11px]">
             <span>FastAPI Port 8000</span>
             <span>&bull;</span>
             <span>Next.js Port 3000</span>

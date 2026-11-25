@@ -159,6 +159,7 @@ export interface ActiveExperimentRecord {
   startedAt: string | null
   completedAt: string | null
   errorMessage?: string | null
+  benchmark?: BenchmarkItem[]
 }
 
 export function parseTraceTokens(input: string): string[] {

@@ -1,25 +1,22 @@
 'use client'
 
-import React from 'react'
+import React, { useState, memo } from 'react'
 import {
   Play,
-  BarChart3,
-  Layers,
-  Settings,
   Shuffle,
   CheckCircle2,
-  Trash2,
+  RotateCcw,
   Cpu,
   Workflow,
-  Sparkles,
   SlidersHorizontal,
-  AlertTriangle
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Layers
 } from 'lucide-react'
 import type { WorkloadType, PolicyType } from './ConfigToolbar'
 
 interface SimulatorSidebarProps {
-  activeTab: 'simulator' | 'results' | 'how-it-works'
-  onTabChange: (tab: 'simulator' | 'results' | 'how-it-works') => void
   workload: WorkloadType
   onWorkloadChange: (w: WorkloadType) => void
   cacheSize: number
@@ -42,9 +39,7 @@ interface SimulatorSidebarProps {
   isLoading?: boolean
 }
 
-export default function SimulatorSidebar({
-  activeTab,
-  onTabChange,
+function SimulatorSidebar({
   workload,
   onWorkloadChange,
   cacheSize,
@@ -66,66 +61,66 @@ export default function SimulatorSidebar({
   onRunSimulation,
   isLoading = false,
 }: SimulatorSidebarProps) {
-  const isRunDisabled = isLoading || (traceMode === 'manual' && (!isCustomValidated || parsedCustomCount === 0))
+  const [mobileExpanded, setMobileExpanded] = useState(true)
+
+  const isRunDisabled =
+    isLoading || (traceMode === 'manual' && (!isCustomValidated || parsedCustomCount === 0))
+
+  const activeWorkloadLabel = traceMode === 'manual' ? 'Custom Trace' : workload
 
   return (
-    <aside className="w-full lg:w-64 flex-shrink-0 flex flex-col gap-5 select-none">
-      {/* Top Sidebar Navigation Tabs */}
-      <div className="flex flex-col gap-1.5 p-1 rounded-xl bg-[#0c121e] border border-[#1e293b]">
-        {/* Simulation */}
-        <button
-          onClick={() => onTabChange('simulator')}
-          className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'simulator'
-              ? 'bg-gradient-to-r from-[#FF454F] to-[#e11d48] text-white shadow-[0_0_12px_rgba(255,69,79,0.35)]'
-              : 'text-[#94a3b8] hover:text-white hover:bg-[#172235]'
-          }`}
-        >
-          <Play className="w-3.5 h-3.5 fill-current" />
-          <span>Simulation</span>
-        </button>
+    <aside className="w-full lg:w-72 flex-shrink-0 lg:sticky lg:top-20 rounded-2xl bg-[var(--bg-sidebar)] text-[var(--text-sidebar)] border border-[var(--border-sidebar)] shadow-[var(--shadow-elevated)] p-4 sm:p-5 flex flex-col gap-4 select-none transition-colors">
+      {/* Desktop Header */}
+      <div className="hidden lg:flex items-center justify-between pb-2.5 border-b border-[var(--border-sidebar)]">
+        <div className="flex items-center gap-2">
+          <SlidersHorizontal className="w-4 h-4 text-[#F1EEE3]" strokeWidth={1.9} />
+          <span className="text-[11px] font-bold tracking-[0.08em] uppercase text-[#F1EEE3]">
+            Experiment Config
+          </span>
+        </div>
+        <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[var(--bg-sidebar-surface)] border border-[var(--border-sidebar)] text-[#F1EEE3] tabular-nums">
+          {cacheSize} Slots
+        </span>
+      </div>
 
-        {/* Results */}
+      {/* Mobile / Tablet Collapsible Header */}
+      <div className="flex lg:hidden items-center justify-between gap-2 pb-2.5 border-b border-[var(--border-sidebar)]">
+        <div className="min-w-0">
+          <span className="text-[10px] uppercase tracking-[0.08em] font-bold text-[var(--text-sidebar-muted)] block">
+            Experiment Config
+          </span>
+          <p className="text-xs font-semibold text-[#F1EEE3] truncate">
+            {activeWorkloadLabel} &bull; {cacheSize} Slots &bull; {policy}
+          </p>
+        </div>
         <button
-          onClick={() => onTabChange('results')}
-          className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'results'
-              ? 'bg-gradient-to-r from-[#FF454F] to-[#e11d48] text-white shadow-[0_0_12px_rgba(255,69,79,0.35)]'
-              : 'text-[#94a3b8] hover:text-white hover:bg-[#172235]'
-          }`}
+          type="button"
+          onClick={() => setMobileExpanded((prev) => !prev)}
+          className="px-2.5 py-1.5 rounded-lg bg-[var(--bg-sidebar-surface)] border border-[var(--border-sidebar)] text-xs font-semibold text-[#F1EEE3] flex items-center gap-1 cursor-pointer ui-interactive"
+          aria-expanded={mobileExpanded}
         >
-          <BarChart3 className="w-3.5 h-3.5" />
-          <span>Results</span>
-        </button>
-
-        {/* How It Works */}
-        <button
-          onClick={() => onTabChange('how-it-works')}
-          className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-            activeTab === 'how-it-works'
-              ? 'bg-gradient-to-r from-[#FF454F] to-[#e11d48] text-white shadow-[0_0_12px_rgba(255,69,79,0.35)]'
-              : 'text-[#94a3b8] hover:text-white hover:bg-[#172235]'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" />
-          <span>How It Works</span>
+          <span>{mobileExpanded ? 'Collapse' : 'Configure'}</span>
+          {mobileExpanded ? (
+            <ChevronUp className="w-3.5 h-3.5" />
+          ) : (
+            <ChevronDown className="w-3.5 h-3.5" />
+          )}
         </button>
       </div>
 
-      {/* Section 1: EXPERIMENT CONFIG */}
-      <div className="flex flex-col gap-3">
-        <span className="text-[10px] font-bold tracking-wider text-[#64748b] uppercase px-1">
-          EXPERIMENT CONFIG
-        </span>
-
+      <div className={`${mobileExpanded ? 'flex' : 'hidden'} lg:flex flex-col gap-3.5`}>
         {/* Workload Selector */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[11px] font-semibold text-[#94a3b8] flex items-center gap-1.5 px-1">
-            <Workflow className="w-3.5 h-3.5 text-[#12CBEA]" />
-            <span>Workload</span>
+          <label
+            htmlFor="sidebar-workload-select"
+            className="text-[11px] font-medium text-[var(--text-sidebar-muted)] flex items-center gap-1.5 px-0.5"
+          >
+            <Workflow className="w-3.5 h-3.5 text-[#F1EEE3]" strokeWidth={1.8} />
+            <span>Workload Pattern</span>
           </label>
-          <div className="relative">
+          <div className="relative group">
             <select
+              id="sidebar-workload-select"
               value={traceMode === 'manual' ? 'Custom Trace' : workload}
               onChange={(e) => {
                 const val = e.target.value
@@ -136,28 +131,36 @@ export default function SimulatorSidebar({
                   onWorkloadChange(val as WorkloadType)
                 }
               }}
-              className="w-full appearance-none px-3 py-2 rounded-xl bg-[#111827] border border-[#1e293b] text-white text-xs font-semibold focus:outline-none focus:border-[#12CBEA] cursor-pointer"
+              className="w-full appearance-none px-3 py-2.5 pr-8 rounded-xl bg-[var(--bg-sidebar-surface-strong)] hover:bg-black/25 border border-[var(--border-sidebar)] text-[#F1EEE3] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#F1EEE3]/35 cursor-pointer transition-colors"
             >
-              <option value="Dynamic">Dynamic</option>
-              <option value="Sequential">Sequential</option>
-              <option value="Looping">Looping</option>
-              <option value="Random">Random</option>
-              <option value="Custom Trace">Custom Trace</option>
+              <option value="Dynamic" className="bg-[#29352D] text-[#F1EEE3]">
+                Dynamic
+              </option>
+              <option value="Sequential" className="bg-[#29352D] text-[#F1EEE3]">
+                Sequential
+              </option>
+              <option value="Looping" className="bg-[#29352D] text-[#F1EEE3]">
+                Looping
+              </option>
+              <option value="Random" className="bg-[#29352D] text-[#F1EEE3]">
+                Random
+              </option>
+              <option value="Custom Trace" className="bg-[#29352D] text-[#F1EEE3]">
+                Custom Trace
+              </option>
             </select>
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#94a3b8] pointer-events-none">
-              ▾
-            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-[var(--text-sidebar-muted)] pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 transition-transform group-hover:translate-y-[-40%]" />
           </div>
         </div>
 
         {/* Controlled Custom Trace Input */}
         {traceMode === 'manual' && (
-          <div className="flex flex-col gap-1.5 p-2.5 rounded-xl bg-[#0c121e] border border-[#1e293b]">
+          <div className="flex flex-col gap-1.5 p-2.5 rounded-xl bg-[var(--bg-sidebar-surface-strong)] border border-[var(--border-sidebar)]">
             <div className="flex items-center justify-between">
-              <span className="text-[10px] uppercase font-bold text-[#94a3b8]">
-                Custom Trace (CSV / Space)
+              <span className="text-[10px] uppercase font-bold tracking-wider text-[var(--text-sidebar-muted)]">
+                Custom Trace
               </span>
-              <span className="text-[10px] font-mono text-[#38bdf8] font-bold">
+              <span className="text-[10px] font-mono text-[#F1EEE3] font-bold tabular-nums">
                 {parsedCustomCount} Blocks
               </span>
             </div>
@@ -165,164 +168,192 @@ export default function SimulatorSidebar({
             <textarea
               value={customTraceInput}
               onChange={(e) => onCustomTraceInputChange(e.target.value)}
-              placeholder="e.g. S, B, C, D, A, B, C, D, H, E, K, B, F, G, A"
+              placeholder="e.g. S, B, C, D, A, B, C, D"
               rows={3}
-              className="w-full px-2.5 py-1.5 rounded-lg bg-[#111827] border border-[#1e293b] text-xs font-mono text-white focus:outline-none focus:border-[#12CBEA] resize-none leading-relaxed"
+              aria-label="Custom memory trace sequence"
+              className="w-full px-2.5 py-2 rounded-lg bg-[#1C2420]/70 border border-[var(--border-sidebar)] text-xs font-mono text-[#F1EEE3] placeholder:text-[#F1EEE3]/40 focus:outline-none focus:ring-2 focus:ring-[#F1EEE3]/35 resize-none leading-relaxed"
             />
 
-            {/* Validation Feedback Status Badge */}
             {customValidationError ? (
-              <span className="text-[10px] text-[#ef4444] font-semibold flex items-center gap-1 mt-0.5">
-                <AlertTriangle className="w-3 h-3 flex-shrink-0" />
+              <span className="text-[10px] text-[#FFD0D0] font-semibold flex items-center gap-1 mt-0.5">
+                <AlertTriangle className="w-3 h-3 flex-shrink-0 text-[#FF6666]" />
                 <span>{customValidationError}</span>
               </span>
             ) : isCustomValidated ? (
-              <span className="text-[10px] text-[#22c55e] font-bold flex items-center gap-1 mt-0.5">
+              <span className="text-[10px] text-[#C8E6D0] font-semibold flex items-center gap-1 mt-0.5">
                 <CheckCircle2 className="w-3 h-3 flex-shrink-0" />
-                <span>TRACE VALIDATED — READY TO EXECUTE</span>
+                <span>TRACE VALIDATED — READY</span>
               </span>
             ) : (
-              <span className="text-[10px] text-amber-400 font-bold flex items-center gap-1 mt-0.5">
+              <span className="text-[10px] text-[#F4D19B] font-semibold flex items-center gap-1 mt-0.5">
                 <AlertTriangle className="w-3 h-3 flex-shrink-0" />
-                <span>CUSTOM TRACE MODIFIED — VALIDATION REQUIRED</span>
+                <span>MODIFIED — VALIDATE TRACE</span>
               </span>
             )}
           </div>
         )}
 
-        {/* Trace Length Slider (for Auto Mode) */}
+        {/* Trace Length Slider (Auto Mode) */}
         {traceMode === 'auto' && (
-          <div className="flex flex-col gap-1.5 p-2 rounded-xl bg-[#0c121e] border border-[#1e293b]">
-            <label className="text-[11px] font-semibold text-[#94a3b8] flex items-center justify-between">
-              <span className="flex items-center gap-1.5">
-                <SlidersHorizontal className="w-3.5 h-3.5 text-[#38bdf8]" />
-                <span>Trace Length</span>
+          <div className="flex flex-col gap-1.5 p-3 rounded-xl bg-[var(--bg-sidebar-surface-strong)] border border-[var(--border-sidebar)]">
+            <label
+              htmlFor="sidebar-trace-length"
+              className="text-[11px] font-medium text-[var(--text-sidebar-muted)] flex items-center justify-between"
+            >
+              <span>Trace Length</span>
+              <span className="font-mono text-[#F1EEE3] text-xs font-bold tabular-nums">
+                {traceLength} Blocks
               </span>
-              <span className="font-mono text-white text-xs font-bold">{traceLength} Blocks</span>
             </label>
             <input
+              id="sidebar-trace-length"
               type="range"
               min={4}
               max={30}
               step={1}
               value={traceLength}
               onChange={(e) => onTraceLengthChange(Number(e.target.value))}
-              className="w-full accent-[#12CBEA] cursor-pointer mt-1"
+              className="w-full accent-[#F20B0B] cursor-pointer mt-1"
             />
           </div>
         )}
 
         {/* Cache Capacity Selector */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[11px] font-semibold text-[#94a3b8] flex items-center gap-1.5 px-1">
-            <Layers className="w-3.5 h-3.5 text-[#12CBEA]" />
+          <label
+            htmlFor="sidebar-capacity-select"
+            className="text-[11px] font-medium text-[var(--text-sidebar-muted)] flex items-center gap-1.5 px-0.5"
+          >
+            <Layers className="w-3.5 h-3.5 text-[#F1EEE3]" strokeWidth={1.8} />
             <span>Cache Capacity</span>
           </label>
-          <div className="relative">
+          <div className="relative group">
             <select
+              id="sidebar-capacity-select"
               value={cacheSize}
               onChange={(e) => onCacheSizeChange(Number(e.target.value))}
-              className="w-full appearance-none px-3 py-2 rounded-xl bg-[#111827] border border-[#1e293b] text-white text-xs font-semibold focus:outline-none focus:border-[#12CBEA] cursor-pointer"
+              className="w-full appearance-none px-3 py-2.5 pr-8 rounded-xl bg-[var(--bg-sidebar-surface-strong)] hover:bg-black/25 border border-[var(--border-sidebar)] text-[#F1EEE3] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#F1EEE3]/35 cursor-pointer transition-colors"
             >
-              <option value={2}>2 Slots</option>
-              <option value={4}>4 Slots</option>
-              <option value={8}>8 Slots</option>
-              <option value={16}>16 Slots</option>
+              <option value={2} className="bg-[#29352D] text-[#F1EEE3]">
+                2 Slots
+              </option>
+              <option value={4} className="bg-[#29352D] text-[#F1EEE3]">
+                4 Slots
+              </option>
+              <option value={8} className="bg-[#29352D] text-[#F1EEE3]">
+                8 Slots
+              </option>
+              <option value={16} className="bg-[#29352D] text-[#F1EEE3]">
+                16 Slots
+              </option>
             </select>
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#94a3b8] pointer-events-none">
-              ▾
-            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-[var(--text-sidebar-muted)] pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 transition-transform group-hover:translate-y-[-40%]" />
           </div>
         </div>
 
         {/* Replacement Policy Selector */}
         <div className="flex flex-col gap-1.5">
-          <label className="text-[11px] font-semibold text-[#94a3b8] flex items-center gap-1.5 px-1">
-            <Cpu className="w-3.5 h-3.5 text-[#FF454F]" />
+          <label
+            htmlFor="sidebar-policy-select"
+            className="text-[11px] font-medium text-[var(--text-sidebar-muted)] flex items-center gap-1.5 px-0.5"
+          >
+            <Cpu className="w-3.5 h-3.5 text-[#F1EEE3]" strokeWidth={1.8} />
             <span>Replacement Policy</span>
           </label>
-          <div className="relative">
+          <div className="relative group">
             <select
+              id="sidebar-policy-select"
               value={policy}
               onChange={(e) => onPolicyChange(e.target.value as PolicyType)}
-              className="w-full appearance-none px-3 py-2 rounded-xl bg-[#111827] border border-[#1e293b] text-white text-xs font-semibold focus:outline-none focus:border-[#FF454F] cursor-pointer"
+              className="w-full appearance-none px-3 py-2.5 pr-8 rounded-xl bg-[var(--bg-sidebar-surface-strong)] hover:bg-black/25 border border-[var(--border-sidebar)] text-[#F1EEE3] text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-[#F1EEE3]/35 cursor-pointer transition-colors"
             >
-              <option value="ML + Prefetch">ML + Prefetch</option>
-              <option value="ML Replacement">ML Replacement</option>
-              <option value="LRU">LRU</option>
-              <option value="FIFO">FIFO</option>
-              <option value="Random">Random</option>
+              <option value="ML + Prefetch" className="bg-[#29352D] text-[#F1EEE3]">
+                ML + Prefetch
+              </option>
+              <option value="ML Replacement" className="bg-[#29352D] text-[#F1EEE3]">
+                ML Replacement
+              </option>
+              <option value="LRU" className="bg-[#29352D] text-[#F1EEE3]">
+                LRU
+              </option>
+              <option value="FIFO" className="bg-[#29352D] text-[#F1EEE3]">
+                FIFO
+              </option>
+              <option value="Random" className="bg-[#29352D] text-[#F1EEE3]">
+                Random
+              </option>
             </select>
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#94a3b8] pointer-events-none">
-              ▾
-            </span>
+            <ChevronDown className="w-3.5 h-3.5 text-[var(--text-sidebar-muted)] pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 transition-transform group-hover:translate-y-[-40%]" />
           </div>
         </div>
-      </div>
 
-      {/* Section 2: QUICK ACTIONS */}
-      <div className="flex flex-col gap-2.5">
-        <span className="text-[10px] font-bold tracking-wider text-[#64748b] uppercase px-1">
-          QUICK ACTIONS
-        </span>
+        {/* Actions Section */}
+        <div className="flex flex-col gap-2 pt-3 mt-1 border-t border-[var(--border-sidebar)]">
+          <span className="text-[10px] font-bold tracking-[0.08em] text-[var(--text-sidebar-muted)] uppercase px-0.5">
+            Controls
+          </span>
 
-        {/* Generate Sequence (for Auto Mode) */}
-        {traceMode === 'auto' && (
-          <button
-            onClick={onGenerateSequence}
-            disabled={isLoading}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-[#111827] hover:bg-[#172235] border border-[#1e293b] text-white text-xs font-semibold transition-all cursor-pointer active:scale-98 disabled:opacity-40"
-            title="Generate a new trace sequence from backend generator"
-          >
-            <Shuffle className="w-3.5 h-3.5 text-[#12CBEA]" />
-            <span>Generate Sequence</span>
-          </button>
-        )}
-
-        {/* Validate Sequence Button */}
-        <button
-          onClick={onValidateSequence}
-          className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold transition-all cursor-pointer active:scale-98 ${
-            traceMode === 'manual' && !isCustomValidated
-              ? 'bg-amber-500/15 border-amber-500/40 text-amber-300 animate-pulse'
-              : 'bg-[#111827] hover:bg-[#172235] border-[#1e293b] text-white'
-          }`}
-          title="Validate trace block syntax and sequence length"
-        >
-          <CheckCircle2 className="w-3.5 h-3.5 text-[#22c55e]" />
-          <span>Validate Sequence</span>
-        </button>
-
-        {/* Clear */}
-        <button
-          onClick={onClear}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-[#111827] hover:bg-[#172235] border border-[#1e293b] text-[#94a3b8] hover:text-[#FF454F] text-xs font-semibold transition-all cursor-pointer active:scale-98"
-        >
-          <Trash2 className="w-3.5 h-3.5" />
-          <span>Clear</span>
-        </button>
-
-        {/* Primary Run Button */}
-        <button
-          onClick={onRunSimulation}
-          disabled={isRunDisabled}
-          className="w-full mt-2 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#FF454F] to-[#e11d48] hover:from-[#ff5e67] hover:to-[#f43f5e] text-white text-xs font-bold shadow-[0_0_16px_rgba(255,69,79,0.4)] transition-all cursor-pointer active:scale-98 disabled:opacity-40 disabled:cursor-not-allowed"
-        >
-          {isLoading ? (
-            <>
-              <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
-              <span>Simulating...</span>
-            </>
-          ) : traceMode === 'manual' && !isCustomValidated ? (
-            <span>Validate Sequence First</span>
-          ) : (
-            <>
-              <Play className="w-3.5 h-3.5 fill-current" />
-              <span>Run Simulation</span>
-            </>
+          {traceMode === 'auto' && (
+            <button
+              type="button"
+              onClick={onGenerateSequence}
+              disabled={isLoading}
+              className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--bg-sidebar-surface)] hover:bg-[var(--bg-sidebar-surface-strong)] border border-[var(--border-sidebar)] text-[#F1EEE3] text-xs font-semibold cursor-pointer ui-interactive disabled:opacity-45"
+              title="Generate a new trace sequence from backend generator"
+            >
+              <Shuffle className="w-3.5 h-3.5 text-[#F1EEE3]" strokeWidth={1.8} />
+              <span>Generate Sequence</span>
+            </button>
           )}
-        </button>
+
+          <button
+            type="button"
+            onClick={onValidateSequence}
+            className={`w-full flex items-center gap-2 px-3 py-2 rounded-xl border text-xs font-semibold cursor-pointer ui-interactive ${
+              traceMode === 'manual' && !isCustomValidated
+                ? 'bg-[#E8B55D]/20 border-[#E8B55D] text-[#F1EEE3]'
+                : 'bg-[var(--bg-sidebar-surface)] hover:bg-[var(--bg-sidebar-surface-strong)] border-[var(--border-sidebar)] text-[#F1EEE3]'
+            }`}
+            title="Validate trace block syntax and sequence length"
+          >
+            <CheckCircle2 className="w-3.5 h-3.5 text-[#C8E6D0]" strokeWidth={1.8} />
+            <span>Validate Sequence</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onClear}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-xl bg-[var(--bg-sidebar-surface)] hover:bg-[var(--bg-sidebar-surface-strong)] border border-[var(--border-sidebar)] text-[var(--text-sidebar-muted)] hover:text-[#F1EEE3] text-xs font-semibold cursor-pointer ui-interactive"
+          >
+            <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.8} />
+            <span>Reset Simulation</span>
+          </button>
+
+          {/* Primary Vermilion CTA */}
+          <button
+            type="button"
+            onClick={onRunSimulation}
+            disabled={isRunDisabled}
+            className="w-full mt-1.5 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--accent-vermilion)] hover:bg-[var(--accent-vermilion-hover)] text-white text-xs font-bold shadow-sm cursor-pointer ui-interactive disabled:opacity-45 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              <>
+                <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
+                <span>Simulating...</span>
+              </>
+            ) : traceMode === 'manual' && !isCustomValidated ? (
+              <span>Validate Sequence First</span>
+            ) : (
+              <>
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Run Simulation</span>
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </aside>
   )
 }
+
+export default memo(SimulatorSidebar)
